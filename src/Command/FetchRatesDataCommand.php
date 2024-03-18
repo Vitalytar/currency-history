@@ -16,7 +16,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use App\Entity\ExchangeRate;
 use Doctrine\ORM\EntityManagerInterface;
 
-#[AsCommand('app:fetch-rates-data', 'Fetching currency rates from AnyAPI on a daily basis')]
+#[AsCommand('app:fetch-rates-data', 'Fetching currency rates from AnyAPI on a daily basis or manually')]
 class FetchRatesDataCommand extends Command
 {
     // TODO: Move to DB configs somewhere
@@ -44,10 +44,19 @@ class FetchRatesDataCommand extends Command
             ->setHelp('This command fetch AnyAPI data about currencies');
     }
 
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $result = $this->fetchRatesData();
-        $output->writeln('CLI command executed successfully');
 
         foreach ($result as $rateData) {
             $exchangeRate = new ExchangeRate();
@@ -59,6 +68,8 @@ class FetchRatesDataCommand extends Command
             $this->entityManager->persist($exchangeRate);
             $this->entityManager->flush();
         }
+
+        $output->writeln('CLI command executed successfully');
 
         return Command::SUCCESS;
     }
@@ -76,19 +87,25 @@ class FetchRatesDataCommand extends Command
             $apiKey = self::API_KEY;
             $baseCurrency = self::BASE_CURRENCY;
             $currenciesData = [];
+            $response = $this->httpClient->request(
+                'GET',
+                "https://anyapi.io/api/v1/exchange/rates?apiKey=$apiKey&base=$baseCurrency"
+            );
+
+            if ($response->getStatusCode() !== 200) {
+                $this->logger->error('ERROR | Not able to fetch currency rates!');
+
+                return [];
+            }
+
+            $currencyData = $response->toArray();
 
             foreach (self::TARGET_CURRENCIES as $targetCurrency) {
-                $response = $this->httpClient->request(
-                    'GET',
-                    "https://anyapi.io/api/v1/exchange/convert?apiKey=$apiKey&base=$baseCurrency&to=$targetCurrency&amount=10000"
-                );
-
-                if ($response->getStatusCode() !== 200) {
-                    $this->logger->error('ERROR | Not able to fetch rates for - ' . $targetCurrency);
-                    continue;
-                }
-
-                $currenciesData[] = $response->toArray();
+                $currenciesData[] = [
+                    'base' => $currencyData['base'],
+                    'to' => $targetCurrency,
+                    'rate' => $currencyData['rates'][$targetCurrency]
+                ];
             }
 
             return $currenciesData;
