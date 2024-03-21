@@ -19,7 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 #[AsCommand('app:fetch-rates-data', 'Fetching currency rates from AnyAPI on a daily basis or manually')]
 class FetchRatesDataCommand extends Command
 {
-    // TODO: Move to DB configs somewhere
+    // Better to move API Key to DB somewhere, new table with configs
     private const API_KEY = 'm4eei5o452p07rcbc1hvg4i0idep4h9oifljdvmbk17a40q6u4hm8';
     protected const BASE_CURRENCY = 'EUR';
     protected const TARGET_CURRENCIES = [
@@ -28,6 +28,13 @@ class FetchRatesDataCommand extends Command
         'USD'
     ];
 
+    /**
+     * @param HttpClientInterface    $httpClient
+     * @param LoggerInterface        $logger
+     * @param ExchangeRate           $exchangeRate
+     * @param EntityManagerInterface $entityManager
+     * @param string|null            $name
+     */
     public function __construct(
         protected HttpClientInterface $httpClient,
         protected LoggerInterface $logger,
@@ -38,6 +45,9 @@ class FetchRatesDataCommand extends Command
         parent::__construct($name);
     }
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setDescription('Fetch currency rates from the API')

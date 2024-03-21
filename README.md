@@ -5,3 +5,14 @@
 4. Create new DB to install schemas
 5. Create `.env.local` file in root or modify `.env` file and setup DB connection
 6. Run migration - `php bin/console doctrine:migrations:migrate`
+7. Run `npm install`
+8. Start local Symfony server, e.g. using Symfony CLI - `symfony server:start`
+9. Start FE in dev mode - `npm run watch`
+
+# Cron job setup
+To update data every day need to add following to the crontab
+
+`0 1 * * * php /path/to/your/project/bin/console app:fetch-rates-data`
+
+Current schedule will run every day at 1 AM
+Schedule can be modified as per the requirements

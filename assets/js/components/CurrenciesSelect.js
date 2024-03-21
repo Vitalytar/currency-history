@@ -48,7 +48,9 @@ export class CurrenciesSelect extends Component {
     };
 
     fetchCurrenciesData(currencyCode) {
-        axios.get(`http://localhost:8000/api/currency/${currencyCode}`).then(currenciesData => {
+        const baseUrl = window.location.origin;
+
+        axios.get(`${baseUrl}/api/currency/${currencyCode}`).then(currenciesData => {
             const { data } = currenciesData;
             this.setState({ currenciesData: data, currencyCode });
         });
@@ -98,14 +100,14 @@ export class CurrenciesSelect extends Component {
                     </tbody>
                 </table>
                 <div className="pagination">
-                    <button onClick={ this.handlePreviousPage } disabled={ currentPage === 0 }>
-                        Previous Page
+                    <button className="ActionButton" onClick={ this.handlePreviousPage } disabled={ currentPage === 0 }>
+                        { '<' }
                     </button>
                     <span>
                         Page { currentPage + 1 } of { Math.ceil(currenciesData.length / pageSize) }
                     </span>
-                    <button onClick={ this.handleNextPage } disabled={ endIndex >= currenciesData.length }>
-                        Next Page
+                    <button className="ActionButton" onClick={ this.handleNextPage } disabled={ endIndex >= currenciesData.length }>
+                        { '>' }
                     </button>
                 </div>
                 { this.renderMiscData() }
