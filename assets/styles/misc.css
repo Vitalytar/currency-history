@@ -1,0 +1,30 @@
+table, td, th {
+    border: 1px solid;
+    border-collapse: collapse;
+}
+
+td, th {
+    padding: 10px;
+}
+
+ul {
+    list-style: none;
+    display: flex;
+    font-size: 24px;
+    font-weight: 800;
+    gap: 20px;
+    justify-content: center;
+}
+
+ul li {
+    cursor: pointer;
+}
+
+.CurrencyTable {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 auto;
+    text-align: center;
+    gap: 20px;
+}
